@@ -1,0 +1,102 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block contenido %}
+
+  {% if articulos %}
+    <section class="alert alert-success" role="alert">
+      <strong>Todos los Posts con la categoría: {{ categoria }}</strong>
+    </section>
+  {% else %}
+    <section class="alert alert-danger" role="alert">
+      <strong>No existen artículos con la categoría: {{ categoria }}</strong>
+    </section>
+  {% endif %}
+
+  {% for articulo in articulos %}
+      {% if forloop.counter|divisibleby:2 %}
+          <!-- Artículo 1 -->
+          <article class="card mb-3">
+            <section class="row g-0">
+              <figure class="col-md-5">
+                <img src= {{ articulo.imagen.url }} class="img-fluid rounded-end float-end" alt="...">
+              </figure>
+              <section class="col-md-7">
+                <section class="card-body">
+                  <strong class="d-inline-block mb-2 text-primary">{{ articulo.categoria }}</strong>
+                  <h4 class="mb-0">{{ articulo.titulo }}</h4>
+                  <p class="mb-1 text-muted">{{ articulo.creacion|date:'d F Y'|capfirst }}</p>
+                  <p class="card-text mb-auto">{{ articulo.bajada }}</p>
+                  <p class="card-text">
+                    <small class="text-muted">
+                      <a href= {% url 'articulo' articulo_slug=articulo.slug %} class="stretched-link">Seguir leyendo</a>
+                    </small>
+                  </p>
+                </section>
+              </section>
+            </section>
+          </article>
+      {% else %}
+          <!-- Artículo 2 -->
+          <article class="card mb-3">
+            <section class="row g-0">
+              <section class="col-md-7">
+                <section class="card-body">
+                  <strong class="d-inline-block mb-2 text-primary">{{ articulo.categoria }}</strong>
+                  <h4 class="mb-0">{{ articulo.titulo }}</h4>
+                  <p class="mb-1 text-muted">{{ articulo.creacion|date:'d F Y'|capfirst }}</p>
+                  <p class="card-text mb-auto">{{ articulo.bajada }}</p>
+                  <p class="card-text">
+                    <small class="text-muted">
+                      <a href= {% url 'articulo' articulo_slug=articulo.slug %} class="stretched-link">Seguir leyendo</a>
+                    </small>
+                  </p>
+                </section>
+              </section>
+              <figure class="col-md-5">
+                <img src= {{ articulo.imagen.url }} class="img-fluid rounded-end float-end" alt="...">
+              </figure>
+            </section>
+          </article>
+      {% endif %}
+  {% endfor %}
+
+          <!-- NAVEGACION ENTRE ARTICULOS MAS ANTIGUOS - PAGINACION -->
+  <hr>
+  
+  {% if articulos %}
+    <nav aria-label="...">
+      <ul class="pagination justify-content-center">
+        <li class="page-item"><a class="page-link" href="?page=1">Inicio</a></li>
+
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+          </li>
+        {% else %}
+          <li class="page-item page-link disabled">Anterior</li>
+        {% endif %}
+
+        <li class="page-item page-link active">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</li>
+        
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled page-link">Siguiente</li>
+        {% endif %}
+        
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a></li>
+
+      </ul>
+    </nav>
+  {% else %}
+    <section class="my-3 mt-5 mb-5">
+      <a class="btn btn-dark rounded-pill" href={% url 'inicio' %}>Volver al Inicio</a>
+    </section>
+  {% endif %}
+  <hr>
+
+
+{% endblock contenido %}

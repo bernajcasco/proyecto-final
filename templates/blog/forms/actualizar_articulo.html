@@ -1,0 +1,23 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+
+{% block contenido %}
+
+    <section>
+        <h2>Actualizar Artículo</h2>
+        <form method='post' enctype='multipart/form-data'>
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <section class='my-3 mt-5 mb-5'>
+                <a class="btn btn-dark rounded-pill" href={% url 'articulo' articulo_slug=articulo.slug %}>Cancelar</a>
+                <input class='btn btn-dark rounded-pill float-end' type='submit' value='Actualizar Articulo'>
+            </section>
+
+        </form>
+    </section>
+
+
+{% endblock contenido %}

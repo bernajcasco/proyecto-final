@@ -1,0 +1,25 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+
+{% block contenido %}
+
+    <section>
+        <h2>Eliminar Artículo</h2>
+        <form method='post'>
+            {% csrf_token %}
+
+            <article class="card mx-auto mt-5" style="width: 18rem;">
+                <section class="card-body">
+                    <h5 class="card-title">Borrado</h5>
+                    <p class="card-text">¿Confirme el borrado del artículo: <strong>{{ articulo }}</strong> ?</p>
+                    <a class="btn btn-dark rounded-pill" href={% url 'articulo' articulo_slug=articulo.slug %}>Cancelar</a>
+                    <input class='btn btn-dark rounded-pill float-end' type='submit' value='Confirmar'>
+                </section>
+            </article>
+
+        </form>
+    </section>
+
+
+{% endblock contenido %}

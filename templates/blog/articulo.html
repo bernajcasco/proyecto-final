@@ -1,0 +1,80 @@
+{% extends 'blog/base.html' %}
+
+{% load static %}
+
+{% block contenido %}
+
+<article class="blog-post">
+    <section class="col-auto d-none d-lg-block">
+      <img src= "{% static 'articulo.imagen.url' %}" class="img-fluid" alt="" />
+    </section>
+
+    <strong class="d-inline-block mb-2 mt-3 text-primary"><a href= "{% url 'categoria' categoria_slug=articulo.categoria.slug %}" >{{ articulo.categoria }}</a></strong>
+    <h2 class="blog-post-title mb-1">{{ articulo.titulo }}</h2>
+    <p class="blog-post-meta">{{ articulo.creacion|date:'d F Y'|capfirst }} por <a href= "{% url 'autor' autor=articulo.autor%}"" >{{ articulo.autor }}</a></p>
+
+    <p class="lead my-3">{{ articulo.bajada }}</p>
+    <hr>
+    <p>{{ articulo.contenido|safe }}</p>
+
+    <hr>
+
+    <strong>Etiquetas:</strong>
+    {% for etiqueta in articulo.etiquetas.all %}
+      <span class="badge text-bg-dark">{{etiqueta.nombre|upper}}</span>
+    {% endfor %}
+  </article>
+
+  <section class="my-3 mt-5 mb-5">
+    <a class="btn btn-dark rounded-pill" href= "{% url 'inicio' %}">Volver al Inicio</a>
+    {% if request.user == articulo.autor or request.user.is_superuser %}
+      <section class='float-end'>
+        <a class="btn btn-dark rounded-pill" href= "{% url 'actualizar_articulo' articulo_slug=articulo.slug %}">Editar</a>
+        <a class="btn btn-dark rounded-pill" href="{% url 'eliminar_articulo' articulo_slug=articulo.slug %}">Eliminar</a>
+    </section>
+    {% endif %} 
+  </section>
+
+  <!-- Comentarios -->
+  <section>
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex flex-start align-items-center">
+          <img class="rounded-circle shadow-1-strong me-3"
+            src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/img%20(19).webp" alt="avatar" width="60"
+            height="60" />
+          <div>
+            <h6 class="fw-bold text-primary mb-1">Lily Coleman</h6>
+            <p class="text-muted small mb-0">
+              Shared publicly - Jan 2020
+            </p>
+          </div>
+        </div>
+
+        <p class="mt-3 mb-4 pb-2">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+          quis nostrud exercitation ullamco laboris nisi ut aliquip consequat.
+        </p>
+
+      </div>
+      <div class="card-footer py-3 border-0" style="background-color: #f8f9fa;">
+        <div class="d-flex flex-start w-100">
+          <img class="rounded-circle shadow-1-strong me-3"
+            src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/img%20(19).webp" alt="avatar" width="40"
+            height="40" />
+          <div class="form-outline w-100">
+            <textarea class="form-control" id="textAreaExample" rows="4" style="background: #fff;"></textarea>
+            <label class="form-label" for="textAreaExample">Message</label>
+          </div>
+        </div>
+        <div class="float-end mt-2 pt-1">
+          <button type="button" class="btn btn-primary btn-sm">Post comment</button>
+          <button type="button" class="btn btn-outline-primary btn-sm">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+{% endblock contenido %}
