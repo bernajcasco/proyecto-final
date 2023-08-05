@@ -5,9 +5,9 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.utils.decorators import method_decorator
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect ,render
 from django.urls import reverse_lazy, reverse
 from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView
@@ -15,6 +15,9 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.dates import YearArchiveView
 from core import settings
 from . import models, forms
+from django.contrib.auth.models import Group
+from .models import Comment
+from .forms import CommentForm
 
 
 class NotFoundView(TemplateView):
@@ -178,60 +181,45 @@ class SignUpView(CreateView):
         response = super().form_valid(form)
         # Configurar la contraseña correctamente
         self.object.set_password(form.cleaned_data['password1'])
-        # Marcar el usuario como inactivo hasta que confirme su correo electrónico
-        self.object.is_active = False
-
-        if not Group.objects.filter(name='miembro').exists():
-            Group.objects.create(name='miembro')
-            Group.objects.create(name='colaborador')
-
-        self.object.groups.add(Group.objects.get(name='miembro'))
         self.object.save()
 
-        # Generar el token de verificación
-        token = default_token_generator.make_token(self.object)
-        uid = urlsafe_base64_encode(force_bytes(self.object.pk))
-
-        # Construir el enlace de confirmación
-        confirmation_link = self.request.build_absolute_uri(
-            reverse('confirmacion', kwargs={'code': token, 'user': uid})
-        )
-
-        # Enviar correo electrónico de confirmación
-        subject = 'Confirmación de registro'
-        message = render_to_string('registration/confirmation_email.html', {
-            'user': self.object,
-            'confirmation_link': confirmation_link,
-        })
-        send_mail(subject, message, settings.EMAIL_HOST_USER,
-                  [self.object.email])
+        # Si no existe el grupo "miembro", créalo
+        if not Group.objects.filter(name='miembro').exists():
+            Group.objects.create(name='miembro')
+        
+        # Agregar al usuario al grupo "miembro"
+        self.object.groups.add(Group.objects.get(name='miembro'))
 
         return response
+    
 
+def comment_section(request):
+    comments = Comment.objects.all()
 
-class ConfirmationView(View):
-    def get(self, request, code, user):
-        try:
-            uid = urlsafe_base64_decode(user).decode('utf-8')
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            # Manejar enlace inválido o usuario no encontrado
-            messages.error(request, "El enlace de confirmación es inválido.")
-            # Redirigir a la página de inicio de sesión o donde desees
-            return redirect('login')
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = request.user
+            comment.save()
+            return redirect('comment_section')
 
-        if default_token_generator.check_token(user, code):
-            # Si el token es válido, confirmar al usuario y activar su cuenta
-            user.is_active = True
-            perfil = models.Perfil.objects.create(user=user)
-            perfil.save()
+    else:
+        form = CommentForm()
 
-            user.save()
-            messages.success(
-                request, "¡Tu cuenta ha sido activada! Ahora puedes iniciar sesión.")
-        else:
-            # Manejar token inválido
-            messages.error(request, "El enlace de confirmación es inválido.")
+    return render(request, 'blog/comment_section.html', {'comments': comments, 'form': form})
+# def comment_section(request):
+#     comments = Comment.objects.all()
 
-        # Redirigir a la página de inicio de sesión o donde desees
-        return redirect('login')
+#     if request.method == 'POST':
+#         form = CommentForm(request.POST)
+#         if form.is_valid():
+#             comment = form.save(commit=False)
+#             comment.user = request.user
+#             comment.save()
+#             return redirect('comment_section')
+
+#     else:
+#         form = CommentForm()
+
+#     return render(request, 'comment_section.html', {'comments': comments, 'form': form})

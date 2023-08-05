@@ -1,0 +1,61 @@
+{% extends 'blog/base.html' %}
+
+{% load static %}
+
+{% block contenido %}
+
+<article class="blog-post">
+    <section class="col-auto d-none d-lg-block">
+      <img src="{{ articulo.imagen.url }}" class="img-fluid" alt="" />
+    </section>
+
+    <strong class="d-inline-block mb-2 mt-3 text-primary"><a href="{% url 'categoria' categoria_slug=articulo.categoria.slug %}">{{ articulo.categoria }}</a></strong>
+    <h2 class="blog-post-title mb-1">{{ articulo.titulo }}</h2>
+    <p class="blog-post-meta">{{ articulo.creacion|date:'d F Y'|capfirst }} por <a href="{% url 'autor' autor=articulo.autor%}">{{ articulo.autor }}</a></p>
+
+    <p class="lead my-3">{{ articulo.bajada }}</p>
+    <hr>
+    <p>{{ articulo.contenido|safe }}</p>
+
+    <hr>
+
+    <strong>Etiquetas:</strong>
+    {% for etiqueta in articulo.etiquetas.all %}
+      <span class="badge text-bg-dark">{{etiqueta.nombre|upper}}</span>
+    {% endfor %}
+  </article>
+
+  <section class="my-3 mt-5 mb-5">
+    <a class="btn btn-dark rounded-pill" href="{% url 'inicio' %}">Volver al Inicio</a>
+    {% if request.user == articulo.autor or request.user.is_superuser %}
+      <section class='float-end'>
+        <a class="btn btn-dark rounded-pill" href="{% url 'actualizar_articulo' articulo_slug=articulo.slug %}">Editar</a>
+        <a class="btn btn-dark rounded-pill" href="{% url 'eliminar_articulo' articulo_slug=articulo.slug %}">Eliminar</a>
+    </section>
+    {% endif %} 
+  </section>
+
+  <!-- Comentarios -->
+  <h1>Comentarios</h1>
+
+  {% for comment in comments %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <p>{{ comment.text }}</p>
+            <p class="text-muted">Comentado por {{ comment.user.username }} - {{ comment.created_at }}</p>
+        </div>
+    </div>
+  {% endfor %}
+
+  {% if user.is_authenticated %}
+    <h2>Agregar un comentario</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Enviar comentario</button>
+    </form>
+  {% else %}
+    <p>Para dejar un comentario, por favor <a href="{% url 'login' %}">inicia sesión</a>.</p>
+  {% endif %}
+
+{% endblock contenido %}

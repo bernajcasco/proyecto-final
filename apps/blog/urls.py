@@ -26,8 +26,8 @@ urlpatterns = [
          views.ArticuloDeleteView.as_view(), name='eliminar_articulo'),
 
     path('signup/', views.SignUpView.as_view(), name='signup'),
+    
+    path('comments/', views.comment_section, name='comment_section'),
 
-    path('confirmacion/<str:code>/<str:user>/',
-         views.ConfirmationView.as_view(), name='confirmacion')
 
 ]
